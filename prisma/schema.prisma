@@ -13,31 +13,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Person {
-  id        String   @id @default(uuid())
-  name      String
-  lastname  String
-  dni       String
-  email     String
-  phone     String
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  User User?
-}
-
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  password  String
-  personId  String   @unique
+  id       String @id @default(uuid())
+  name     String
+  lastname String
+  dni      String
+  email    String
+  phone    String
+
+  username  String?   @unique
+  password  String?
   role      Role     @default(USER)
   status    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  Person Person @relation(fields: [personId], references: [id])
 }
 
 enum Role {
