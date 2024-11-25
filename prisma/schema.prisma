@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id        String   @id @default(uuid())
+  name      String
+  lastname  String
+  dni       String
+  email     String
+  phone     String
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User?
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  personId  String   @unique
+  role      Role     @default(USER)
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Person Person @relation(fields: [personId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Product {
+  id          String @id @default(uuid())
+  name        String
+  description String
+
+  OfficeProduct OfficeProduct[]
+}
+
+model Office {
+  id       String @id @default(uuid())
+  name     String
+  location String
+
+  OfficeProduct OfficeProduct[]
+}
+
+model OfficeProduct {
+  id        String   @id @default(uuid())
+  officeId  String
+  productId String
+  stock     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Office  Office  @relation(fields: [officeId], references: [id])
+  Product Product @relation(fields: [productId], references: [id])
+
+  Entry   Entry[]
+  Exit    Exit[]
+  Origin  Tranfer[] @relation("Origin")
+  Destiny Tranfer[] @relation("Destiny")
+  Loan    Loan[]
+  Return  Return[]
+}
+
+model Entry {
+  id              String   @id @default(uuid())
+  officeProductId String
+  quantity        Int
+  observation     String
+  createdAt       DateTime @default(now())
+
+  OfficeProduct OfficeProduct @relation(fields: [officeProductId], references: [id])
+}
+
+model Exit {
+  id              String   @id @default(uuid())
+  officeProductId String
+  quantity        Int
+  observation     String
+  createdAt       DateTime @default(now())
+
+  OfficeProduct OfficeProduct @relation(fields: [officeProductId], references: [id])
+}
+
+model Tranfer {
+  id                     String   @id @default(uuid())
+  officeProductIdOrigin  String
+  officeProductIdDestiny String
+  quantity               Int
+  observation            String
+  createdAt              DateTime @default(now())
+
+  OfficeProductOrigin  OfficeProduct @relation("Origin", fields: [officeProductIdOrigin], references: [id])
+  OfficeProductDestiny OfficeProduct @relation("Destiny", fields: [officeProductIdDestiny], references: [id])
+}
+
+model Loan {
+  id              String   @id @default(uuid())
+  officeProductId String
+  quantity        Int
+  observation     String
+  createdAt       DateTime @default(now())
+
+  OfficeProduct OfficeProduct @relation(fields: [officeProductId], references: [id])
+}
+
+model Return {
+  id              String   @id @default(uuid())
+  officeProductId String
+  quantity        Int
+  observation     String
+  createdAt       DateTime @default(now())
+
+  OfficeProduct OfficeProduct @relation(fields: [officeProductId], references: [id])
+}
