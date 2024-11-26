@@ -3,6 +3,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -13,7 +15,7 @@ export class UserService {
         data: {
           ...createUserDto,
           username: createUserDto.dni,
-          password: createUserDto.dni,
+          password: bcrypt.hashSync(createUserDto.dni, 10),
         },
       });
       return user;
