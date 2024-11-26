@@ -18,14 +18,7 @@ export class ProductController {
 
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
-    try {
-      if (!createProductDto.description) {
-        createProductDto.description = 'No description';
-      }
-      return this.productService.create(createProductDto);
-    } catch (err) {
-      throw new BadRequestException(`Error creating product`);
-    }
+    return this.productService.create(createProductDto);
   }
 
   @Get()

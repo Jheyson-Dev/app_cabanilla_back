@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,7 +7,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ProductService {
   constructor(private readonly prismaService: PrismaService) {}
   create(createProductDto: CreateProductDto) {
-    return this.prismaService.product.create({ data: createProductDto });
+    try {
+      if (!createProductDto.description) {
+        createProductDto.description = 'No description';
+      }
+      return this.prismaService.product.create({
+        data: createProductDto,
+      });
+    } catch (err) {
+      throw new BadRequestException(`Error creating product`);
+    }
   }
 
   findAll() {
