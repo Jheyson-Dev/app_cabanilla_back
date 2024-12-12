@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateEntryDto } from './dto/create-entry.dto';
-import { UpdateEntryDto } from './dto/update-entry.dto';
+import { CreateExitDto } from './dto/create-exit.dto';
+import { UpdateExitDto } from './dto/update-exit.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InventoryDto } from './dto/inventory.dto';
+import { InventoryDto } from 'src/entry/dto/inventory.dto';
 
 @Injectable()
-export class EntryService {
+export class ExitService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(inventoryDto: InventoryDto) {
@@ -38,52 +38,39 @@ export class EntryService {
           id: inventoryDto.productId,
         },
       });
-      if (!product) {
-        throw new BadRequestException(`Product not found`);
-      }
 
       if (!inventory) {
-        const createInventory = await this.prismaService.officeProduct.create({
-          data: {
-            officeId: inventoryDto.officeId,
-            productId: inventoryDto.productId,
-            stock: inventoryDto.quantity,
-          },
-        });
-        const entry = await this.prismaService.entry.create({
-          data: {
-            officeProductId: createInventory.id,
-            quantity: inventoryDto.quantity,
-            observation: inventoryDto.observation,
-          },
-        });
-        return entry;
+        throw new BadRequestException(`Inventory not found`);
+      }
+
+      if (!product) {
+        throw new BadRequestException(`Product not found`);
       }
 
       await this.prismaService.officeProduct.update({
         where: { id: inventory.id },
         data: {
           stock: {
-            increment: inventoryDto.quantity,
+            decrement: inventoryDto.quantity,
           },
         },
       });
 
-      const entry = await this.prismaService.entry.create({
+      const exit = await this.prismaService.exit.create({
         data: {
           officeProductId: inventory.id,
           quantity: inventoryDto.quantity,
           observation: inventoryDto.observation,
         },
       });
-      return entry;
+      return exit;
     } catch (err) {
-      throw new BadRequestException(`Error creating entry: ${err.message}`);
+      throw new BadRequestException(`Error creating exit: ${err.message}`);
     }
   }
 
   findAll() {
-    return this.prismaService.entry.findMany({
+    return this.prismaService.exit.findMany({
       include: {
         OfficeProduct: {
           include: {
@@ -95,20 +82,15 @@ export class EntryService {
     });
   }
 
-  findOne(id: string) {
-    return this.prismaService.entry.findUnique({
-      where: { id },
-    });
+  findOne(id: number) {
+    return `This action returns a #${id} exit`;
   }
 
-  update(id: string, updateEntryDto: UpdateEntryDto) {
-    return this.prismaService.entry.update({
-      where: { id },
-      data: updateEntryDto,
-    });
+  update(id: number, updateExitDto: UpdateExitDto) {
+    return `This action updates a #${id} exit`;
   }
 
-  remove(id: string) {
-    return `Operation is not permitted`;
+  remove(id: number) {
+    return `This action removes a #${id} exit`;
   }
 }

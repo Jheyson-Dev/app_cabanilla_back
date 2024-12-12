@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateEntryDto } from './dto/create-entry.dto';
-import { UpdateEntryDto } from './dto/update-entry.dto';
+import { CreateLoanDto } from './dto/create-loan.dto';
+import { UpdateLoanDto } from './dto/update-loan.dto';
+import { InventoryDto } from 'src/entry/dto/inventory.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InventoryDto } from './dto/inventory.dto';
 
 @Injectable()
-export class EntryService {
+export class LoanService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(inventoryDto: InventoryDto) {
@@ -43,47 +43,33 @@ export class EntryService {
       }
 
       if (!inventory) {
-        const createInventory = await this.prismaService.officeProduct.create({
-          data: {
-            officeId: inventoryDto.officeId,
-            productId: inventoryDto.productId,
-            stock: inventoryDto.quantity,
-          },
-        });
-        const entry = await this.prismaService.entry.create({
-          data: {
-            officeProductId: createInventory.id,
-            quantity: inventoryDto.quantity,
-            observation: inventoryDto.observation,
-          },
-        });
-        return entry;
+        throw new BadRequestException(`Inventory not found`);
       }
 
       await this.prismaService.officeProduct.update({
         where: { id: inventory.id },
         data: {
           stock: {
-            increment: inventoryDto.quantity,
+            decrement: inventoryDto.quantity,
           },
         },
       });
 
-      const entry = await this.prismaService.entry.create({
+      const loan = await this.prismaService.loan.create({
         data: {
           officeProductId: inventory.id,
           quantity: inventoryDto.quantity,
           observation: inventoryDto.observation,
         },
       });
-      return entry;
+      return loan;
     } catch (err) {
       throw new BadRequestException(`Error creating entry: ${err.message}`);
     }
   }
 
   findAll() {
-    return this.prismaService.entry.findMany({
+    return this.prismaService.loan.findMany({
       include: {
         OfficeProduct: {
           include: {
@@ -95,20 +81,15 @@ export class EntryService {
     });
   }
 
-  findOne(id: string) {
-    return this.prismaService.entry.findUnique({
-      where: { id },
-    });
+  findOne(id: number) {
+    return `This action returns a #${id} loan`;
   }
 
-  update(id: string, updateEntryDto: UpdateEntryDto) {
-    return this.prismaService.entry.update({
-      where: { id },
-      data: updateEntryDto,
-    });
+  update(id: number, updateLoanDto: UpdateLoanDto) {
+    return `This action updates a #${id} loan`;
   }
 
-  remove(id: string) {
-    return `Operation is not permitted`;
+  remove(id: number) {
+    return `This action removes a #${id} loan`;
   }
 }

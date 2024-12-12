@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateEntryDto } from './dto/create-entry.dto';
-import { UpdateEntryDto } from './dto/update-entry.dto';
+import { CreateReturnDto } from './dto/create-return.dto';
+import { UpdateReturnDto } from './dto/update-return.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InventoryDto } from './dto/inventory.dto';
+import { InventoryDto } from 'src/entry/dto/inventory.dto';
 
 @Injectable()
-export class EntryService {
+export class ReturnService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(inventoryDto: InventoryDto) {
@@ -43,21 +43,7 @@ export class EntryService {
       }
 
       if (!inventory) {
-        const createInventory = await this.prismaService.officeProduct.create({
-          data: {
-            officeId: inventoryDto.officeId,
-            productId: inventoryDto.productId,
-            stock: inventoryDto.quantity,
-          },
-        });
-        const entry = await this.prismaService.entry.create({
-          data: {
-            officeProductId: createInventory.id,
-            quantity: inventoryDto.quantity,
-            observation: inventoryDto.observation,
-          },
-        });
-        return entry;
+        throw new BadRequestException(`Inventory not found`);
       }
 
       await this.prismaService.officeProduct.update({
@@ -69,7 +55,7 @@ export class EntryService {
         },
       });
 
-      const entry = await this.prismaService.entry.create({
+      const entry = await this.prismaService.return.create({
         data: {
           officeProductId: inventory.id,
           quantity: inventoryDto.quantity,
@@ -83,7 +69,7 @@ export class EntryService {
   }
 
   findAll() {
-    return this.prismaService.entry.findMany({
+    return this.prismaService.return.findMany({
       include: {
         OfficeProduct: {
           include: {
@@ -95,20 +81,15 @@ export class EntryService {
     });
   }
 
-  findOne(id: string) {
-    return this.prismaService.entry.findUnique({
-      where: { id },
-    });
+  findOne(id: number) {
+    return `This action returns a #${id} return`;
   }
 
-  update(id: string, updateEntryDto: UpdateEntryDto) {
-    return this.prismaService.entry.update({
-      where: { id },
-      data: updateEntryDto,
-    });
+  update(id: number, updateReturnDto: UpdateReturnDto) {
+    return `This action updates a #${id} return`;
   }
 
-  remove(id: string) {
-    return `Operation is not permitted`;
+  remove(id: number) {
+    return `This action removes a #${id} return`;
   }
 }

@@ -9,6 +9,9 @@ export class OfficeService {
 
   create(createOfficeDto: CreateOfficeDto) {
     try {
+      if (!createOfficeDto.location) {
+        createOfficeDto.location = 'No location';
+      }
       return this.prismaService.office.create({
         data: createOfficeDto,
       });

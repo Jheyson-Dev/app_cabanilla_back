@@ -23,7 +23,7 @@ export class AuthService {
       where: { username: loginDto.username },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new BadRequestException('User not found');
     }
 
     // COMPARACION DE LAS CONTRASEÑAS
@@ -54,5 +54,16 @@ export class AuthService {
 
   register() {
     return `This action returns all auth`;
+  }
+
+  async getprofile(id: string) {
+    try {
+      const user = await this.prismaService.user.findUnique({
+        where: { id },
+      });
+      return user;
+    } catch (err) {
+      throw new NotFoundException('User not found');
+    }
   }
 }

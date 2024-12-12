@@ -20,12 +20,43 @@ export class ProductService {
   }
 
   findAll() {
-    return this.prismaService.product.findMany();
+    return this.prismaService.product.findMany({
+      include: {
+        OfficeProduct: {
+          include: {
+            Entry: true,
+            Exit: true,
+            Loan: true,
+            Return: true,
+          },
+        },
+      },
+    });
   }
 
   findOne(id: string) {
     return this.prismaService.product.findUnique({
       where: { id },
+      include: {
+        OfficeProduct: {
+          include: {
+            Entry: {
+              include: {
+                OfficeProduct: {
+                  include: {
+                    Office: true,
+                  },
+                },
+              },
+            },
+            Exit: true,
+            Loan: true,
+            Return: true,
+            Office: true,
+            Product: true,
+          },
+        },
+      },
     });
   }
 
